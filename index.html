@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Светлячки — Банка хороших моментов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 50%, #0c0c1e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            text-align: center;
+            padding-top: 60px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .app-title {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ffeb3b, #ff9800, #ffeb3b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-subtitle {
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #ffeb3b;
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.2);
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 235, 59, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Mood Panel */
+        .mood-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .mood-overlay.active {
+            display: flex;
+        }
+
+        .mood-panel {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .mood-title {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .mood-spectrum {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .mood-color {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .mood-color:hover {
+            transform: scale(1.2);
+        }
+
+        .mood-color.selected {
+            border-color: #fff;
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .mood-color.red { background: linear-gradient(135deg, #ff4444, #cc0000); }
+        .mood-color.orange { background: linear-gradient(135deg, #ff9800, #f57c00); }
+        .mood-color.yellow { background: linear-gradient(135deg, #ffeb3b, #ffc107); }
+        .mood-color.lime { background: linear-gradient(135deg, #8bc34a, #689f38); }
+        .mood-color.green { background: linear-gradient(135deg, #4caf50, #2e7d32); }
+
+        .skip-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .skip-btn:hover {
+            color: #fff;
+        }
+
+        /* Main Screen - Jar */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .storage-info {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .storage-bar {
+            width: 100px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .storage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #8bc34a);
+            transition: width 0.3s;
+        }
+
+        /* Jar Container */
+        .jar-container {
+            position: relative;
+            width: 280px;
+            height: 350px;
+            margin: 20px auto;
+        }
+
+        .jar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .jar-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px 20px 60px 60px;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 30px rgba(255, 255, 255, 0.05),
+                0 0 40px rgba(255, 235, 59, 0.1);
+        }
+
+        .jar-lid {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 40px;
+            background: linear-gradient(135deg, #5d4e37, #3d3427);
+            border-radius: 8px 8px 4px 4px;
+            border: 2px solid #6d5e47;
+        }
+
+        .jar-neck {
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+        }
+
+        /* Fireflies */
+        .fireflies-container {
+            position: absolute;
+            top: 80px;
+            left: 35px;
+            width: 210px;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .firefly {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .firefly::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            filter: blur(8px);
+            opacity: 0.8;
+        }
+
+        .firefly:hover {
+            transform: scale(1.5);
+            z-index: 10;
+        }
+
+        .firefly.mood-red { background: #ff4444; box-shadow: 0 0 20px #ff4444; }
+        .firefly.mood-orange { background: #ff9800; box-shadow: 0 0 20px #ff9800; }
+        .firefly.mood-yellow { background: #ffeb3b; box-shadow: 0 0 20px #ffeb3b; }
+        .firefly.mood-lime { background: #8bc34a; box-shadow: 0 0 20px #8bc34a; }
+        .firefly.mood-green { background: #4caf50; box-shadow: 0 0 20px #4caf50; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-15px) translateX(10px); }
+            50% { transform: translateY(-5px) translateX(-10px); }
+            75% { transform: translateY(-20px) translateX(5px); }
+        }
+
+        .firefly-count {
+            text-align: center;
+            font-size: 18px;
+            color: #ffeb3b;
+            margin-bottom: 20px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 20px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn .icon {
+            font-size: 28px;
+        }
+
+        .action-btn .label {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .action-btn.add {
+            background: linear-gradient(135deg, #ffeb3b, #ff9800);
+            color: #000;
+            grid-column: span 2;
+        }
+
+        .action-btn.sad {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .action-btn.tags {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: #fff;
+        }
+
+        .action-btn.stats {
+            background: linear-gradient(135deg, #eb3349, #f45c43);
+            color: #fff;
+        }
+
+        .action-btn.achieve {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: #fff;
+        }
+        
+        /* New Diary Button */
+        .action-btn.diary {
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: #000;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Add Moment Screen */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .textarea-group textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 16px;
+            resize: none;
+            font-family: inherit;
+        }
+
+        .textarea-group textarea:focus {
+            outline: none;
+            border-color: #ffeb3b;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 10px;
+            color: #888;
+        }
+
+        /* Tags */
+        .tags-container {
+            margin: 20px 0;
+        }
+
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .tag:hover, .tag.selected {
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            color: #000;
+        }
+
+        .add-tag-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-tag-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+
+        .add-tag-input button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #ffeb3b;
+            color: #000;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Mood Selection for Moment */
+        .moment-mood {
+            margin: 20px 0;
+        }
+
+        .mini-mood-spectrum {
+            display: flex;
+            gap: 15px;
+        }
+
+        .mini-mood-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .mini-mood-color:hover, .mini-mood-color.selected {
+            transform: scale(1.2);
+            border-color: #fff;
+        }
+
+        /* File Upload */
+        .file-upload {
+            margin: 20px 0;
+        }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #ffeb3b;
+            background: rgba(255, 235, 59, 0.05);
+        }
+
+        .upload-area .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .file-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* View Moment Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .moment-content {
+            margin: 20px 0;
+        }
+
+        .moment-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .moment-media {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .moment-media img {
+            width: 100%;
+            display: block;
+        }
+
+        .moment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .moment-tag {
+            padding: 5px 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .moment-date {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .share-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Sad Mode Screen */
+        .sad-mode {
+            text-align: center;
+            padding-top: 40px;
+        }
+
+        .sad-mode .emoji {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .sad-mode h2 {
+            margin-bottom: 30px;
+        }
+
+        .comfort-message {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .random-moment {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 25px;
+            border-radius: 16px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .random-moment .firefly-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        /* Stats Screen */
+        .stats-container {
+            padding-top: 20px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stats-card h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .mood-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 100px;
+            gap: 8px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 6px 6px 0 0;
+            min-height: 10px;
+            transition: height 0.5s;
+        }
+
+        .chart-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 10px;
+            color: #888;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Achievements */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .achievement {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement.locked {
+            opacity: 0.5;
+        }
+
+        .achievement.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .achievement .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .achievement .name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .achievement .desc {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .achievement .progress {
+            margin-top: 10px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .achievement .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffeb3b, #ff9800);
+        }
+
+        /* Tags Filter Screen */
+        .tags-filter {
+            padding-top: 20px;
+        }
+
+        .filter-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tag {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-tag.active {
+            background: linear-gradient(45deg, #ffeb3b, #ff9800);
+            color: #000;
+        }
+
+        .moments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .moment-card {
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .moment-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .moment-card .firefly {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            animation: none;
+        }
+
+        .moment-card .info {
+            flex: 1;
+        }
+
+        .moment-card .preview {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 5px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .moment-card .meta {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #1a1a3e, #2a2a5e);
+            padding: 15px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            z-index: 200;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Link Share Modal */
+        .share-link-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .share-link-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .copy-btn {
+            padding: 12px 20px;
+            background: #4caf50;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* --- Diary Styles --- */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 2;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .date-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            min-width: 130px;
+        }
+
+        .thought-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #fff;
+        }
+
+        .thought-card.mood-red { border-left-color: #ff4444; }
+        .thought-card.mood-orange { border-left-color: #ff9800; }
+        .thought-card.mood-yellow { border-left-color: #ffeb3b; }
+        .thought-card.mood-lime { border-left-color: #8bc34a; }
+        .thought-card.mood-green { border-left-color: #4caf50; }
+
+        .thought-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .thought-body {
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #2193b0, #6dd5ed);
+            color: #fff;
+            border: none;
+            font-size: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            cursor: pointer;
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .mood-spectrum {
+                gap: 5px;
+            }
+            .mood-color {
+                width: 40px;
+                height: 40px;
+            }
+            .jar-container {
+                width: 240px;
+                height: 300px;
+            }
+            .jar-body {
+                width: 180px;
+                height: 240px;
+            }
+            .fireflies-container {
+                width: 170px;
+                height: 210px;
+                left: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        <div class="screen active" id="authScreen">
+            <div class="auth-container">
+                <div class="logo">🫙✨</div>
+                <h1 class="app-title">Светлячки</h1>
+                <p class="app-subtitle">Банка хороших моментов</p>
+                
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Ваше имя">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="email" placeholder="Email">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Пароль">
+                </div>
+                
+                <button class="btn btn-primary" onclick="login()">Войти</button>
+                <button class="btn btn-secondary" onclick="register()">Создать аккаунт</button>
+            </div>
+        </div>
+
+        <div class="screen" id="mainScreen">
+            <div class="header">
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">A</div>
+                    <div>
+                        <div id="userName">Пользователь</div>
+                        <div class="storage-info">
+                            <span id="storageUsed">0</span> / 100 МБ
+                            <div class="storage-bar">
+                                <div class="storage-fill" id="storageFill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="back-btn" onclick="logout()">🚪</button>
+            </div>
+
+            <div class="jar-container">
+                <div class="jar">
+                    <div class="jar-lid"></div>
+                    <div class="jar-neck"></div>
+                    <div class="jar-body">
+                        <div class="fireflies-container" id="firefliesContainer">
+                            </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="firefly-count">
+                🌟 <span id="fireflyCount">0</span> светлячков
+            </div>
+
+            <div class="actions">
+                <button class="action-btn add" onclick="showScreen('addScreen')">
+                    <span class="icon">✨</span>
+                    <span class="label">Добавить момент</span>
+                </button>
+                <button class="action-btn sad" onclick="showScreen('sadScreen')">
+                    <span class="icon">💜</span>
+                    <span class="label">Мне грустно</span>
+                </button>
+                <button class="action-btn tags" onclick="showScreen('tagsScreen')">
+                    <span class="icon">🏷️</span>
+                    <span class="label">По тегам</span>
+                </button>
+                <button class="action-btn diary" onclick="showScreen('diaryScreen')">
+                    <span class="icon">📖</span>
+                    <span class="label">Дневник</span>
+                </button>
+                <button class="action-btn stats" onclick="showScreen('statsScreen')">
+                    <span class="icon">📊</span>
+                    <span class="label">Статистика</span>
+                </button>
+                <button class="action-btn achieve" onclick="showScreen('achieveScreen')">
+                    <span class="icon">🏆</span>
+                    <span class="label">Достижения</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="screen" id="addScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            <h2 class="section-title">✨ Новый момент</h2>
+
+            <div class="textarea-group">
+                <label class="label">Что хорошего произошло?</label>
+                <textarea id="momentText" placeholder="Опишите ваш светлый момент..."></textarea>
+            </div>
+
+            <div class="moment-mood">
+                <label class="label">Настроение этого момента</label>
+                <div class="mini-mood-spectrum">
+                    <div class="mini-mood-color mood-color red" data-mood="red" onclick="selectMomentMood(this)"></div>
+                    <div class="mini-mood-color mood-color orange" data-mood="orange" onclick="selectMomentMood(this)"></div>
+                    <div class="mini-mood-color mood-color yellow" data-mood="yellow" onclick="selectMomentMood(this)"></div>
+                    <div class="mini-mood-color mood-color lime" data-mood="lime" onclick="selectMomentMood(this)"></div>
+                    <div class="mini-mood-color mood-color green selected" data-mood="green" onclick="selectMomentMood(this)"></div>
+                </div>
+            </div>
+
+            <div class="tags-container">
+                <label class="label">Теги</label>
+                <div class="tags-list" id="tagsList">
+                    <span class="tag" data-tag="семья" onclick="toggleTag(this)">👨‍👩‍👧 Семья</span>
+                    <span class="tag" data-tag="друзья" onclick="toggleTag(this)">👥 Друзья</span>
+                    <span class="tag" data-tag="работа" onclick="toggleTag(this)">💼 Работа</span>
+                    <span class="tag" data-tag="хобби" onclick="toggleTag(this)">🎨 Хобби</span>
+                    <span class="tag" data-tag="природа" onclick="toggleTag(this)">🌿 Природа</span>
+                    <span class="tag" data-tag="еда" onclick="toggleTag(this)">🍕 Еда</span>
+                    <span class="tag" data-tag="спорт" onclick="toggleTag(this)">⚽ Спорт</span>
+                    <span class="tag" data-tag="музыка" onclick="toggleTag(this)">🎵 Музыка</span>
+                </div>
+                <div class="add-tag-input">
+                    <input type="text" id="newTagInput" placeholder="Свой тег...">
+                    <button onclick="addCustomTag()">+</button>
+                </div>
+            </div>
+
+            <div class="file-upload">
+                <label class="label">Фото/Видео (опционально)</label>
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="icon">📷</div>
+                    <div>Нажмите чтобы загрузить</div>
+                </div>
+                <input type="file" id="fileInput" hidden accept="image/*,video/*" multiple onchange="handleFileUpload(event)">
+                <div class="file-preview" id="filePreview"></div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveMoment()">💫 Сохранить светлячка</button>
+        </div>
+
+        <div class="screen" id="diaryScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            <h2 class="section-title">📖 Дневник мыслей</h2>
+            <p style="color:#888; font-size:12px; margin-bottom:15px;">Хранятся записи только за последние 7 дней</p>
+
+            <div class="search-bar">
+                <input type="text" class="search-input" id="diarySearch" placeholder="Поиск по словам..." oninput="searchDiary()">
+                <input type="date" class="date-input" id="diaryDateFilter" onchange="searchDiary()">
+            </div>
+
+            <div id="diaryList">
+                </div>
+
+            <button class="fab" onclick="showScreen('addThoughtScreen')">+</button>
+        </div>
+
+        <div class="screen" id="addThoughtScreen">
+            <button class="back-btn" onclick="showScreen('diaryScreen')">← Назад</button>
+            <h2 class="section-title">✏️ Записать мысль</h2>
+
+            <div class="textarea-group">
+                <label class="label">О чем думаешь сейчас?</label>
+                <textarea id="thoughtText" placeholder="Выговорись, бумага (или экран) всё стерпит..."></textarea>
+            </div>
+
+            <div class="moment-mood">
+                <label class="label">Настроение</label>
+                <div class="mini-mood-spectrum">
+                    <div class="mini-mood-color mood-color red" data-mood="red" onclick="selectThoughtMood(this)"></div>
+                    <div class="mini-mood-color mood-color orange" data-mood="orange" onclick="selectThoughtMood(this)"></div>
+                    <div class="mini-mood-color mood-color yellow selected" data-mood="yellow" onclick="selectThoughtMood(this)"></div>
+                    <div class="mini-mood-color mood-color lime" data-mood="lime" onclick="selectThoughtMood(this)"></div>
+                    <div class="mini-mood-color mood-color green" data-mood="green" onclick="selectThoughtMood(this)"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveThought()">💾 Сохранить в дневник</button>
+        </div>
+
+
+        <div class="screen" id="sadScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            
+            <div class="sad-mode">
+                <div class="emoji">🌙</div>
+                <h2>Эй, всё будет хорошо</h2>
+                
+                <div class="comfort-message">
+                    <p>Помни: тёмные времена — это просто ночь перед рассветом. Посмотри на свои светлые моменты ✨</p>
+                </div>
+
+                <div id="randomMomentContainer">
+                    </div>
+
+                <button class="btn btn-primary" onclick="showRandomMoment()">🔮 Показать ещё момент</button>
+                
+                <div style="margin-top: 20px;">
+                    <label class="label">Или выбери по тегу:</label>
+                    <div class="filter-tags" id="sadTagsFilter">
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen" id="tagsScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            <h2 class="section-title">🏷️ Моменты по тегам</h2>
+
+            <div class="filter-tags" id="filterTags">
+                <button class="filter-tag active" data-tag="all" onclick="filterByTag('all')">Все</button>
+                </div>
+
+            <div class="moments-list" id="momentsList">
+                </div>
+        </div>
+
+        <div class="screen" id="statsScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            <h2 class="section-title">📊 Статистика</h2>
+
+            <div class="stats-container">
+                <div class="stats-card">
+                    <h3>Всего светлячков</h3>
+                    <div class="stat-number" id="totalMoments">0</div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>Настроение за неделю</h3>
+                    <div class="mood-chart" id="moodChart">
+                        </div>
+                    <div class="chart-label">
+                        <span>Пн</span>
+                        <span>Вт</span>
+                        <span>Ср</span>
+                        <span>Чт</span>
+                        <span>Пт</span>
+                        <span>Сб</span>
+                        <span>Вс</span>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>Текущая серия</h3>
+                    <div class="stat-number"><span id="streakCount">0</span> 🔥</div>
+                    <p style="color: #888; font-size: 14px;">дней подряд</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="screen" id="achieveScreen">
+            <button class="back-btn" onclick="showScreen('mainScreen')">← Назад</button>
+            <h2 class="section-title">🏆 Достижения</h2>
+
+            <div class="achievements-grid" id="achievementsGrid">
+                </div>
+        </div>
+    </div>
+
+    <div class="mood-overlay" id="moodOverlay">
+        <div class="mood-panel">
+            <h2 class="mood-title">Как ты сегодня? 🌟</h2>
+            <div class="mood-spectrum">
+                <div class="mood-color red" data-mood="red" data-value="1" onclick="selectMood(this)"></div>
+                <div class="mood-color orange" data-mood="orange" data-value="2" onclick="selectMood(this)"></div>
+                <div class="mood-color yellow" data-mood="yellow" data-value="3" onclick="selectMood(this)"></div>
+                <div class="mood-color lime" data-mood="lime" data-value="4" onclick="selectMood(this)"></div>
+                <div class="mood-color green" data-mood="green" data-value="5" onclick="selectMood(this)"></div>
+            </div>
+            <button class="skip-btn" onclick="skipMood()">Пропустить</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="momentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>💫 Момент</h3>
+                <button class="close-modal" onclick="closeModal()">×</button>
+            </div>
+            <div class="moment-content" id="modalContent">
+                </div>
+            <button class="share-btn" onclick="shareMoment()">
+                🔗 Поделиться светлячком
+            </button>
+            <div class="share-link-input" id="shareLink" style="display: none;">
+                <input type="text" id="shareLinkInput" readonly>
+                <button class="copy-btn" onclick="copyLink()">📋</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span id="toastIcon">✨</span>
+        <span id="toastMessage">Сохранено!</span>
+    </div>
+
+    <script>
+        // App State
+        let currentUser = null;
+        let moments = [];
+        let moodHistory = [];
+        let thoughts = []; // New array for Diary
+        let selectedMomentMood = 'green';
+        let selectedThoughtMood = 'yellow'; // Default thought mood
+        let selectedTags = [];
+        let uploadedFiles = [];
+        let currentViewingMoment = null;
+
+        // Achievements Definition
+        const achievements = [
+            { id: 'first_light', name: 'Первый свет', desc: 'Добавь первого светлячка', icon: '🌟', condition: (m) => m.length >= 1 },
+            { id: 'week_warmth', name: 'Неделя тепла', desc: '7 дней подряд отмечай настроение', icon: '🔥', condition: () => getStreak() >= 7 },
+            { id: 'full_jar', name: 'Полная банка', desc: '50 светлячков', icon: '🫙', condition: (m) => m.length >= 50 },
+            { id: 'rainbow', name: 'Вся палитра', desc: 'Испытай все цвета спектра', icon: '🌈', condition: () => hasAllMoods() },
+            { id: 'comeback', name: 'Выкарабкался', desc: 'Был красный → стал зелёный за день', icon: '💪', condition: () => hasComeback() },
+            { id: 'generous', name: 'Щедрая душа', desc: 'Поделись 10 светлячками', icon: '🎁', condition: () => getShareCount() >= 10 }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            loadData();
+            cleanupOldThoughts(); // Delete thoughts > 7 days old
+            checkAuth();
+        });
+
+        // Create starry background
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Data Management
+        function loadData() {
+            const savedUser = localStorage.getItem('fireflies_user');
+            const savedMoments = localStorage.getItem('fireflies_moments');
+            const savedMoodHistory = localStorage.getItem('fireflies_mood_history');
+            const savedThoughts = localStorage.getItem('fireflies_thoughts'); // Load thoughts
+
+            if (savedUser) currentUser = JSON.parse(savedUser);
+            if (savedMoments) moments = JSON.parse(savedMoments);
+            if (savedMoodHistory) moodHistory = JSON.parse(savedMoodHistory);
+            if (savedThoughts) thoughts = JSON.parse(savedThoughts);
+        }
+
+        function saveData() {
+            localStorage.setItem('fireflies_user', JSON.stringify(currentUser));
+            localStorage.setItem('fireflies_moments', JSON.stringify(moments));
+            localStorage.setItem('fireflies_mood_history', JSON.stringify(moodHistory));
+            localStorage.setItem('fireflies_thoughts', JSON.stringify(thoughts)); // Save thoughts
+        }
+        
+        // Remove thoughts older than 7 days
+        function cleanupOldThoughts() {
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            const initialLength = thoughts.length;
+            thoughts = thoughts.filter(t => new Date(t.date) > oneWeekAgo);
+            
+            if (thoughts.length !== initialLength) {
+                saveData();
+                console.log("Cleaned up old thoughts");
+            }
+        }
+
+        // Auth Functions
+        function checkAuth() {
+            if (currentUser) {
+                showMainScreen();
+            }
+        }
+
+        function login() {
+            const name = document.getElementById('username').value || 'Пользователь';
+            const email = document.getElementById('email').value;
+            
+            currentUser = { name, email, shareCount: 0 };
+            saveData();
+            showMoodPanel();
+        }
+
+        function register() {
+            login(); // Simplified for prototype
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('fireflies_user');
+            showScreen('authScreen');
+        }
+
+        // Mood Panel
+        function showMoodPanel() {
+            const today = new Date().toDateString();
+            const todayMood = moodHistory.find(m => new Date(m.date).toDateString() === today);
+            
+            if (!todayMood) {
+                document.getElementById('moodOverlay').classList.add('active');
+            } else {
+                showMainScreen();
+            }
+        }
+
+        function selectMood(element) {
+            document.querySelectorAll('.mood-overlay .mood-color').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            
+            const mood = element.dataset.mood;
+            const value = parseInt(element.dataset.value);
+            
+            moodHistory.push({
+                date: new Date().toISOString(),
+                mood,
+                value
+            });
+            
+            saveData();
+            
+            setTimeout(() => {
+                document.getElementById('moodOverlay').classList.remove('active');
+                showMainScreen();
+                checkAchievements();
+            }, 500);
+        }
+
+        function skipMood() {
+            document.getElementById('moodOverlay').classList.remove('active');
+            showMainScreen();
+        }
+
+        // Screen Navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenId === 'mainScreen') {
+                renderFireflies();
+                updateStats();
+            } else if (screenId === 'tagsScreen') {
+                renderTagsFilter();
+                renderMomentsList();
+            } else if (screenId === 'statsScreen') {
+                renderStats();
+            } else if (screenId === 'achieveScreen') {
+                renderAchievements();
+            } else if (screenId === 'sadScreen') {
+                renderSadMode();
+            } else if (screenId === 'addScreen') {
+                resetAddForm();
+            } else if (screenId === 'diaryScreen') {
+                renderDiary();
+            } else if (screenId === 'addThoughtScreen') {
+                resetThoughtForm();
+            }
+        }
+
+        function showMainScreen() {
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+            showScreen('mainScreen');
+        }
+
+        // Fireflies
+        function renderFireflies() {
+            const container = document.getElementById('firefliesContainer');
+            container.innerHTML = '';
+
+            moments.forEach((moment, index) => {
+                const firefly = document.createElement('div');
+                firefly.className = `firefly mood-${moment.mood}`;
+                firefly.style.left = Math.random() * 80 + 10 + '%';
+                firefly.style.top = Math.random() * 80 + 10 + '%';
+                firefly.style.animationDelay = Math.random() * 4 + 's';
+                firefly.onclick = () => viewMoment(index);
+                container.appendChild(firefly);
+            });
+
+            document.getElementById('fireflyCount').textContent = moments.length;
+            
+            // Update storage
+            const storageUsed = moments.length * 0.5; // Simplified calculation
+            document.getElementById('storageUsed').textContent = storageUsed.toFixed(1);
+            document.getElementById('storageFill').style.width = Math.min(storageUsed, 100) + '%';
+        }
+
+        // Add Moment
+        function selectMomentMood(element) {
+            document.querySelectorAll('#addScreen .mini-mood-color').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedMomentMood = element.dataset.mood;
+        }
+
+        function toggleTag(element) {
+            element.classList.toggle('selected');
+            const tag = element.dataset.tag;
+            
+            if (selectedTags.includes(tag)) {
+                selectedTags = selectedTags.filter(t => t !== tag);
+            } else {
+                selectedTags.push(tag);
+            }
+        }
+
+        function addCustomTag() {
+            const input = document.getElementById('newTagInput');
+            const tag = input.value.trim();
+            
+            if (tag) {
+                const tagsList = document.getElementById('tagsList');
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag selected';
+                tagElement.dataset.tag = tag;
+                tagElement.textContent = tag;
+                tagElement.onclick = function() { toggleTag(this); };
+                tagsList.appendChild(tagElement);
+                selectedTags.push(tag);
+                input.value = '';
+            }
+        }
+
+        function handleFileUpload(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('filePreview');
+            
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    uploadedFiles.push(e.target.result);
+                    
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="remove" onclick="removeFile(${uploadedFiles.length - 1})">×</button>
+                    `;
+                    preview.appendChild(item);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            document.getElementById('filePreview').innerHTML = '';
+            uploadedFiles.forEach((file, i) => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+                    <img src="${file}" alt="Preview">
+                    <button class="remove" onclick="removeFile(${i})">×</button>
+                `;
+                document.getElementById('filePreview').appendChild(item);
+            });
+        }
+
+        function resetAddForm() {
+            document.getElementById('momentText').value = '';
+            document.getElementById('filePreview').innerHTML = '';
+            document.querySelectorAll('.tags-list .tag').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('.mini-mood-color').forEach(m => m.classList.remove('selected'));
+            document.querySelector('.mini-mood-color[data-mood="green"]').classList.add('selected');
+            selectedMomentMood = 'green';
+            selectedTags = [];
+            uploadedFiles = [];
+        }
+
+        function saveMoment() {
+            const text = document.getElementById('momentText').value.trim();
+            
+            if (!text) {
+                showToast('⚠️', 'Напишите что-нибудь!');
+                return;
+            }
+
+            const moment = {
+                id: Date.now(),
+                text,
+                mood: selectedMomentMood,
+                tags: [...selectedTags],
+                files: [...uploadedFiles],
+                date: new Date().toISOString(),
+                shared: 0
+            };
+
+            moments.push(moment);
+            saveData();
+            
+            showToast('✨', 'Светлячок добавлен!');
+            checkAchievements();
+            showScreen('mainScreen');
+        }
+        
+        // --- DIARY LOGIC ---
+        
+        function selectThoughtMood(element) {
+            document.querySelectorAll('#addThoughtScreen .mini-mood-color').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedThoughtMood = element.dataset.mood;
+        }
+
+        function resetThoughtForm() {
+            document.getElementById('thoughtText').value = '';
+            document.querySelectorAll('#addThoughtScreen .mini-mood-color').forEach(m => m.classList.remove('selected'));
+            document.querySelector('#addThoughtScreen .mini-mood-color[data-mood="yellow"]').classList.add('selected');
+            selectedThoughtMood = 'yellow';
+        }
+
+        function saveThought() {
+            const text = document.getElementById('thoughtText').value.trim();
+             if (!text) {
+                showToast('⚠️', 'Мысль не может быть пустой');
+                return;
+            }
+            
+            const thought = {
+                id: Date.now(),
+                text,
+                mood: selectedThoughtMood,
+                date: new Date().toISOString()
+            };
+            
+            thoughts.push(thought);
+            saveData();
+            showToast('💾', 'Запись сохранена');
+            showScreen('diaryScreen');
+        }
+
+        function renderDiary() {
+            const list = document.getElementById('diaryList');
+            const searchText = document.getElementById('diarySearch').value.toLowerCase();
+            const filterDate = document.getElementById('diaryDateFilter').value;
+            
+            // Filter
+            let filteredThoughts = thoughts.filter(t => {
+                const matchesText = t.text.toLowerCase().includes(searchText);
+                const matchesDate = filterDate ? t.date.startsWith(filterDate) : true;
+                return matchesText && matchesDate;
+            });
+
+            // Sort new first
+            filteredThoughts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (filteredThoughts.length === 0) {
+                list.innerHTML = '<div style="text-align:center; color:#888; margin-top:30px;">Нет записей 🍃</div>';
+                return;
+            }
+
+            list.innerHTML = filteredThoughts.map(t => `
+                <div class="thought-card mood-${t.mood}">
+                    <div class="thought-header">
+                        <span>${new Date(t.date).toLocaleString('ru-RU')}</span>
+                    </div>
+                    <div class="thought-body">${t.text}</div>
+                </div>
+            `).join('');
+        }
+        
+        function searchDiary() {
+            renderDiary();
+        }
+
+        // --- END DIARY LOGIC ---
+
+        // View Moment
+        function viewMoment(index) {
+            currentViewingMoment = moments[index];
+            const moment = currentViewingMoment;
+            
+            let html = `
+                <div class="firefly mood-${moment.mood}" style="position:relative; margin: 0 auto 20px; animation: none;"></div>
+                <div class="moment-text">${moment.text}</div>
+            `;
+
+            if (moment.files && moment.files.length > 0) {
+                html += `<div class="moment-media"><img src="${moment.files[0]}" alt=""></div>`;
+            }
+
+            if (moment.tags && moment.tags.length > 0) {
+                html += `<div class="moment-tags">${moment.tags.map(t => `<span class="moment-tag">${t}</span>`).join('')}</div>`;
+            }
+
+            html += `<div class="moment-date">📅 ${new Date(moment.date).toLocaleDateString('ru-RU')}</div>`;
+
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('shareLink').style.display = 'none';
+            document.getElementById('momentModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('momentModal').classList.remove('active');
+            currentViewingMoment = null;
+        }
+
+        function shareMoment() {
+            if (!currentViewingMoment) return;
+            
+            const shareUrl = `${window.location.origin}?moment=${currentViewingMoment.id}`;
+            document.getElementById('shareLinkInput').value = shareUrl;
+            document.getElementById('shareLink').style.display = 'flex';
+            
+            currentViewingMoment.shared = (currentViewingMoment.shared || 0) + 1;
+            currentUser.shareCount = (currentUser.shareCount || 0) + 1;
+            saveData();
+            
+            showToast('🔗', 'Ссылка готова!');
+        }
+
+        function copyLink() {
+            const input = document.getElementById('shareLinkInput');
+            input.select();
+            document.execCommand('copy');
+            showToast('📋', 'Ссылка скопирована!');
+        }
+
+        // Sad Mode
+        function renderSadMode() {
+            showRandomMoment();
+            
+            const allTags = [...new Set(moments.flatMap(m => m.tags || []))];
+            const container = document.getElementById('sadTagsFilter');
+            container.innerHTML = allTags.map(tag => 
+                `<button class="filter-tag" onclick="showMomentByTag('${tag}')">${tag}</button>`
+            ).join('');
+        }
+
+        function showRandomMoment() {
+            if (moments.length === 0) {
+                document.getElementById('randomMomentContainer').innerHTML = `
+                    <div class="random-moment">
+                        <p style="text-align: center; color: #888;">У тебя пока нет светлячков. Добавь первый светлый момент! ✨</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const goodMoments = moments.filter(m => ['green', 'lime', 'yellow'].includes(m.mood));
+            const pool = goodMoments.length > 0 ? goodMoments : moments;
+            const moment = pool[Math.floor(Math.random() * pool.length)];
+
+            document.getElementById('randomMomentContainer').innerHTML = `
+                <div class="random-moment">
+                    <div style="margin-bottom: 10px;">
+                        <span class="firefly-indicator" style="background: var(--${moment.mood}-color, ${getMoodColor(moment.mood)})"></span>
+                        <strong>${new Date(moment.date).toLocaleDateString('ru-RU')}</strong>
+                    </div>
+                    <p>${moment.text}</p>
+                    ${moment.files && moment.files[0] ? `<img src="${moment.files[0]}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
+                </div>
+            `;
+        }
+
+        function getMoodColor(mood) {
+            const colors = {
+                red: '#ff4444',
+                orange: '#ff9800',
+                yellow: '#ffeb3b',
+                lime: '#8bc34a',
+                green: '#4caf50'
+            };
+            return colors[mood] || '#ffeb3b';
+        }
+
+        function showMomentByTag(tag) {
+            const taggedMoments = moments.filter(m => m.tags && m.tags.includes(tag));
+            if (taggedMoments.length === 0) {
+                showToast('🤷', 'Нет моментов с этим тегом');
+                return;
+            }
+            
+            const moment = taggedMoments[Math.floor(Math.random() * taggedMoments.length)];
+            document.getElementById('randomMomentContainer').innerHTML = `
+                <div class="random-moment">
+                    <div style="margin-bottom: 10px;">
+                        <span class="firefly-indicator" style="background: ${getMoodColor(moment.mood)}"></span>
+                        <strong>${new Date(moment.date).toLocaleDateString('ru-RU')}</strong>
+                    </div>
+                    <p>${moment.text}</p>
+                </div>
+            `;
+        }
+
+        // Tags Screen
+        function renderTagsFilter() {
+            const allTags = [...new Set(moments.flatMap(m => m.tags || []))];
+            const container = document.getElementById('filterTags');
+            container.innerHTML = `<button class="filter-tag active" data-tag="all" onclick="filterByTag('all')">Все</button>` +
+                allTags.map(tag => `<button class="filter-tag" data-tag="${tag}" onclick="filterByTag('${tag}')">${tag}</button>`).join('');
+        }
+
+        function filterByTag(tag) {
+            document.querySelectorAll('#filterTags .filter-tag').forEach(t => t.classList.remove('active'));
+            document.querySelector(`#filterTags .filter-tag[data-tag="${tag}"]`).classList.add('active');
+            renderMomentsList(tag);
+        }
+
+        function renderMomentsList(filterTag = 'all') {
+            const filtered = filterTag === 'all' 
+                ? moments 
+                : moments.filter(m => m.tags && m.tags.includes(filterTag));
+
+            const container = document.getElementById('momentsList');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888;">Нет моментов</p>';
+                return;
+            }
+
+            container.innerHTML = filtered.map((moment, index) => `
+                <div class="moment-card" onclick="viewMoment(${moments.indexOf(moment)})">
+                    <div class="firefly mood-${moment.mood}"></div>
+                    <div class="info">
+                        <div class="preview">${moment.text}</div>
+                        <div class="meta">📅 ${new Date(moment.date).toLocaleDateString('ru-RU')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Stats
+        function updateStats() {
+            document.getElementById('fireflyCount').textContent = moments.length;
+        }
+
+        function renderStats() {
+            document.getElementById('totalMoments').textContent = moments.length;
+            document.getElementById('streakCount').textContent = getStreak();
+            
+            // Mood chart
+            const chart = document.getElementById('moodChart');
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            const today = new Date();
+            
+            chart.innerHTML = '';
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dayMood = moodHistory.find(m => new Date(m.date).toDateString() === date.toDateString());
+                
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = dayMood ? (dayMood.value * 20) + '%' : '10%';
+                bar.style.background = dayMood ? getMoodColor(dayMood.mood) : '#333';
+                chart.appendChild(bar);
+            }
+        }
+
+        function getStreak() {
+            let streak = 0;
+            const today = new Date();
+            
+            for (let i = 0; i < 365; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const hasMood = moodHistory.some(m => new Date(m.date).toDateString() === date.toDateString());
+                
+                if (hasMood) {
+                    streak++;
+                } else if (i > 0) {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        // Achievements
+        function hasAllMoods() {
+            const moods = ['red', 'orange', 'yellow', 'lime', 'green'];
+            const usedMoods = [...new Set(moodHistory.map(m => m.mood))];
+            return moods.every(m => usedMoods.includes(m));
+        }
+
+        function hasComeback() {
+            for (let i = 1; i < moodHistory.length; i++) {
+                const prev = moodHistory[i - 1];
+                const curr = moodHistory[i];
+                const prevDate = new Date(prev.date).toDateString();
+                const currDate = new Date(curr.date).toDateString();
+                
+                if (prevDate !== currDate && prev.mood === 'red' && curr.mood === 'green') {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getShareCount() {
+            return currentUser?.shareCount || 0;
+        }
+
+        function renderAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            grid.innerHTML = '';
+
+            achievements.forEach(ach => {
+                const unlocked = ach.condition(moments);
+                const progress = getAchievementProgress(ach);
+                
+                grid.innerHTML += `
+                    <div class="achievement ${unlocked ? '' : 'locked'}">
+                        <div class="icon">${ach.icon}</div>
+                        <div class="name">${ach.name}</div>
+                        <div class="desc">${ach.desc}</div>
+                        ${!unlocked ? `<div class="progress"><div class="progress-fill" style="width: ${progress}%"></div></div>` : ''}
+                    </div>
+                `;
+            });
+        }
+
+        function getAchievementProgress(ach) {
+            switch (ach.id) {
+                case 'first_light': return moments.length >= 1 ? 100 : 0;
+                case 'week_warmth': return Math.min((getStreak() / 7) * 100, 100);
+                case 'full_jar': return Math.min((moments.length / 50) * 100, 100);
+                case 'generous': return Math.min((getShareCount() / 10) * 100, 100);
+                default: return 0;
+            }
+        }
+
+        function checkAchievements() {
+            achievements.forEach(ach => {
+                if (ach.condition(moments)) {
+                    // Could show notification for newly unlocked
+                }
+            });
+        }
+
+        // Toast
+        function showToast(icon, message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastIcon').textContent = icon;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
