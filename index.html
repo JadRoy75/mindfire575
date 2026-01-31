@@ -10,160 +10,178 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a3e 50%, #0c0c1e 100%);
+            background: linear-gradient(135deg, #050510 0%, #1a1a3e 50%, #050510 100%);
             min-height: 100vh;
             color: #fff;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ОПТИМИЗИРОВАННЫЙ ФОН И СВЕТЛЯЧКИ */
+        /* --- ФОН: ЗВЕЗДЫ И МЕТЕОРЫ --- */
         .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-        .star { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; opacity: 0.5; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.8; }
+        
+        /* Метеор (Падающая звезда) */
+        .meteor {
+            position: absolute; top: 50%; left: 50%; width: 300px; height: 1px;
+            background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,1));
+            transform: rotate(-45deg); opacity: 0; filter: drop-shadow(0 0 6px #fff);
+            animation: meteorShower 4s linear infinite; pointer-events: none; z-index: 0;
+        }
+        @keyframes meteorShower {
+            0% { opacity: 0; transform: translateX(0) translateY(0) rotate(-45deg); }
+            10% { opacity: 1; }
+            20% { opacity: 0; transform: translateX(-300px) translateY(300px) rotate(-45deg); }
+            100% { opacity: 0; }
+        }
 
-        /* НОВОЕ: Затемненная трава снизу */
-        .ground-overlay {
+        /* --- РЕАЛИСТИЧНАЯ ТРАВА (СЛОЖНЫЕ СЛОИ) --- */
+        .grass-layer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 20vh; /* Высота травы */
-            background: linear-gradient(to top, #050508, transparent);
-            z-index: 1; /* Поверх звезд и фоновых светлячков */
             pointer-events: none;
+            background-repeat: repeat-x;
+            background-position: bottom;
         }
 
-        /* Фоновые светлячки (GPU ускорение) - z-index изменен, чтобы летали за травой */
+        /* Задний слой (размытый для глубины) */
+        .grass-back {
+            height: 160px;
+            z-index: 1;
+            opacity: 0.5;
+            filter: blur(2px);
+            /* Паттерн травы */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 160' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0,160 L10,40 L20,160 L30,80 L40,160 L50,50 L60,160 L70,90 L80,160 L90,30 L100,160 L110,70 L120,160 L130,40 L140,160 L150,80 L160,160 L170,60 L180,160 L190,40 L200,160 L210,90 L220,160 L230,50 L240,160 L250,80 L260,160 L270,30 L280,160 L290,70 L300,160 L310,40 L320,160 L330,80 L340,160 L350,50 L360,160 L370,90 L380,160 L390,40 L400,160 L410,70 L420,160 L430,50 L440,160 L450,80 L460,160 L470,30 L480,160 L490,90 L500,160 L510,40 L520,160 L530,70 L540,160 L550,50 L560,160 L570,80 L580,160 L590,40 L600,160 L610,90 L620,160 L630,30 L640,160 L650,70 L660,160 L670,50 L680,160 L690,80 L700,160 L710,40 L720,160 L730,90 L740,160 L750,50 L760,160 L770,80 L780,160 L790,30 L800,160 Z'/%3E%3C/svg%3E");
+            background-size: 800px 100%;
+        }
+
+        /* Средний слой */
+        .grass-mid {
+            height: 120px;
+            z-index: 1;
+            opacity: 0.8;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 120' preserveAspectRatio='none'%3E%3Cpath fill='%23050505' d='M0,120 L5,20 L15,120 L25,50 L35,120 L45,10 L55,120 L65,60 L75,120 L85,30 L95,120 L105,70 L115,120 L125,20 L135,120 L145,50 L155,120 L165,10 L175,120 L185,60 L195,120 L205,30 L215,120 L225,70 L235,120 L245,20 L255,120 L265,50 L275,120 L285,10 L295,120 L305,60 L315,120 L325,30 L335,120 L345,70 L355,120 L365,20 L375,120 L385,50 L395,120 L405,10 L415,120 L425,60 L435,120 L445,30 L455,120 L465,70 L475,120 L485,20 L495,120 L505,50 L515,120 L525,10 L535,120 L545,60 L555,120 L565,30 L575,120 L585,70 L595,120 Z'/%3E%3C/svg%3E");
+            background-size: 600px 100%;
+        }
+
+        /* Передний слой (черный, детализированный) */
+        .grass-front {
+            height: 90px;
+            z-index: 1;
+            opacity: 1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 90' preserveAspectRatio='none'%3E%3Cpath fill='%23000' d='M0,90 L3,10 L8,90 L12,40 L18,90 L24,5 L30,90 L35,50 L42,90 L48,15 L54,90 L60,35 L66,90 L72,20 L78,90 L84,60 L90,90 L96,10 L102,90 L108,40 L114,90 L120,5 L126,90 L132,50 L138,90 L144,15 L150,90 L156,35 L162,90 L168,20 L174,90 L180,60 L186,90 L192,10 L198,90 L204,40 L210,90 L216,5 L222,90 L228,50 L234,90 L240,15 L246,90 L252,35 L258,90 L264,20 L270,90 L276,60 L282,90 L288,10 L294,90 L300,40 L306,90 L312,5 L318,90 L324,50 L330,90 L336,15 L342,90 L348,35 L354,90 L360,20 L366,90 L372,60 L378,90 L384,10 L390,90 L396,40 L400,90 Z'/%3E%3C/svg%3E");
+            background-size: 400px 100%;
+        }
+
+        /* Затемнение снизу */
+        .ground-gradient {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: #000; z-index: 1; pointer-events: none;
+        }
+
+        /* --- ФОНОВЫЕ СВЕТЛЯЧКИ --- */
         .bg-firefly {
-            position: absolute;
-            width: 8px; height: 8px;
-            background: #ffeb3b;
-            border-radius: 50%;
-            pointer-events: none;
-            box-shadow: 0 0 15px #ffeb3b;
-            will-change: transform;
-            animation: floatBg 15s linear infinite;
-            z-index: 0; /* За травой */
-            opacity: 0.4;
+            position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none;
+            will-change: transform, opacity; animation: floatBg 20s linear infinite; z-index: 0; opacity: 0.6;
         }
         @keyframes floatBg {
-            0% { transform: translate3d(0, 0, 0); }
-            33% { transform: translate3d(50px, -50px, 0); }
-            66% { transform: translate3d(-30px, -100px, 0); }
-            100% { transform: translate3d(0, -150px, 0); opacity: 0;}
+            0% { transform: translate3d(0, 0, 0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translate3d(0, -200px, 0); opacity: 0;}
         }
 
         .container { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
-
         .screen { display: none; animation: fadeIn 0.3s ease; width: 100%; height: 100%; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Базовые стили */
-        input, textarea { width: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; margin-bottom: 15px; }
-        input:focus, textarea:focus { outline: none; border-color: #ffeb3b; }
+        /* --- СТИЛИЗАЦИЯ ИНПУТОВ И КНОПОК --- */
+        input[type="text"], input[type="password"], textarea {
+            width: 100%; padding: 15px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 16px; margin-bottom: 15px;
+            font-family: inherit; transition: 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: #ffeb3b; background: rgba(255,255,255,0.1); }
+
+        /* Стильная кнопка файла (Glassmorphism) */
+        .file-input-wrapper { margin-bottom: 15px; position: relative; }
+        .file-input-wrapper input[type="file"] { display: none; }
+        .file-input-label {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 18px; 
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px; 
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(5px);
+            color: rgba(255,255,255,0.8); cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .file-input-label:hover { 
+            border-color: #ffeb3b; 
+            background: rgba(255,255,255,0.1); 
+            color: #fff; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 235, 59, 0.15);
+        }
+        .file-input-label span { pointer-events: none; font-weight: 500;}
+
         .btn { padding: 15px 30px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: linear-gradient(45deg, #ffeb3b, #ff9800); color: #1a1a3e; }
-        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+        .btn-primary { background: linear-gradient(45deg, #ffeb3b, #ff9800); color: #1a1a3e; box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
         .btn-secondary:hover { background: rgba(255,255,255,0.2); }
 
         /* ИКОНКИ НАСТРОЕНИЯ */
         .svg-icon { width: 40px; height: 40px; stroke-width: 2; fill: none; transition: 0.3s; }
-        .mood-red { stroke: #ff5252; color: #ff5252; }
-        .mood-orange { stroke: #ff9800; color: #ff9800; }
-        .mood-yellow { stroke: #ffeb3b; color: #ffeb3b; }
-        .mood-lime { stroke: #c6ff00; color: #c6ff00; }
+        .mood-red { stroke: #ff5252; color: #ff5252; } .mood-orange { stroke: #ff9800; color: #ff9800; }
+        .mood-yellow { stroke: #ffeb3b; color: #ffeb3b; } .mood-lime { stroke: #c6ff00; color: #c6ff00; }
         .mood-green { stroke: #00e676; color: #00e676; }
-
         .mood-grid { display: flex; justify-content: space-between; gap: 10px; margin-top: 30px; }
         .mood-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 15px; }
         .mood-item:hover { background: rgba(255,255,255,0.05); transform: translateY(-5px); }
         .mood-label { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 10px; }
 
-        /* --- ГИГАНТСКИЕ ЭЛЕМЕНТЫ (СВЕТЛЯЧКИ И ЦВЕТЫ) --- */
+        /* --- ГИГАНТСКИЕ ЭЛЕМЕНТЫ --- */
         .choice-container { display: flex; justify-content: center; align-items: center; gap: 100px; height: 70vh; }
-        
-        /* Общий контейнер для интерактивных элементов */
-        .interactive-element {
-            position: relative;
-            width: 260px;
-            height: 380px;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .interactive-element { position: relative; width: 260px; height: 380px; cursor: pointer; transition: all 0.4s; display: flex; flex-direction: column; align-items: center; }
         .interactive-element:hover { transform: scale(1.05); z-index: 10; }
 
-        /* --- СТИЛИ ДЛЯ ЦВЕТОВ (ВХОД) --- */
-        
-        /* Голова цветка (центр) */
-        .flower-head { 
-            width: 85px; height: 85px; border-radius: 50%; z-index: 2; position: relative; 
-            border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3);
-        }
-
-        /* Лепестки/Пух (вместо крыльев) */
-        .flower-petals {
-            position: absolute; top: 70px; width: 220px; height: 220px; 
-            border-radius: 50%; backdrop-filter: blur(10px); transition: 0.3s; z-index: 1; 
-            transform-origin: center center; border: 1px solid rgba(255,255,255,0.1);
-        }
+        /* ЦВЕТЫ */
+        .flower-head { width: 85px; height: 85px; border-radius: 50%; z-index: 2; position: relative; border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3); }
+        .flower-petals { position: absolute; top: 70px; width: 220px; height: 220px; border-radius: 50%; backdrop-filter: blur(10px); transition: 0.3s; z-index: 1; transform-origin: center center; border: 1px solid rgba(255,255,255,0.1); }
         .interactive-element:hover .flower-petals { transform: scale(1.1); }
-
-        /* Стебель/Основа (вместо пузика) - тот же стиль, что и у светлячка */
-        .flower-stem {
-            width: 130px; height: 180px; background: rgba(40, 60, 40, 0.8); border-radius: 65px; /* Зеленоватый оттенок */
-            margin-top: -20px; z-index: 2; transition: all 0.5s;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            overflow: hidden; position: relative;
-            border: 2px solid rgba(255,255,255,0.1);
-        }
-
-        /* Текст */
+        .flower-stem { width: 130px; height: 180px; background: rgba(40, 60, 40, 0.8); border-radius: 65px; margin-top: -20px; z-index: 2; transition: all 0.5s; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 2px solid rgba(255,255,255,0.1); }
         .elem-title { font-weight: bold; font-size: 22px; color: #fff; transition: 0.3s; z-index: 3; text-transform: uppercase; }
         .elem-desc { font-size: 14px; color: #1a1a3e; opacity: 0; text-align: center; padding: 0 10px; transition: 0.5s; margin-top: 5px; z-index: 3; font-weight: 500;}
 
-        /* == Одуванчик (Вход) == */
-        .dandelion .flower-head { background: radial-gradient(circle, #ffffff, #e0e0e0); /* Белая голова */ }
-        .dandelion .flower-petals { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px rgba(255,255,255,0.3); /* Белый пух */ }
-        /* Свечение Одуванчика */
-        .dandelion:hover .flower-stem { background: #ffffff; box-shadow: 0 0 60px #ffffff; border-color: #ffffff; }
-        .dandelion:hover .elem-title { color: #1a1a3e; }
-        .dandelion:hover .elem-desc { opacity: 1; }
+        /* Одуванчик & Ромашка стили */
+        .dandelion .flower-head { background: radial-gradient(circle, #ffffff, #e0e0e0); }
+        .dandelion .flower-petals { background: rgba(255, 255, 255, 0.15); box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+        .dandelion:hover .flower-stem { background: #ffffff; box-shadow: 0 0 60px #ffffff; }
+        .dandelion:hover .elem-title { color: #1a1a3e; } .dandelion:hover .elem-desc { opacity: 1; }
 
-        /* == Ромашка (Регистрация) == */
-        .chamomile .flower-head { background: radial-gradient(circle, #ffeb3b, #fbc02d); /* Желтая серединка */ }
-        .chamomile .flower-petals { background: rgba(255, 255, 255, 0.3); border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; /* Белые лепестки */ }
-        /* Свечение Ромашки */
-        .chamomile:hover .flower-stem { background: #ffeb3b; box-shadow: 0 0 60px #ffeb3b; border-color: #ffeb3b; }
-        .chamomile:hover .elem-title { color: #1a1a3e; }
-        .chamomile:hover .elem-desc { opacity: 1; }
+        .chamomile .flower-head { background: radial-gradient(circle, #ffeb3b, #fbc02d); }
+        .chamomile .flower-petals { background: rgba(255, 255, 255, 0.2); border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; }
+        .chamomile:hover .flower-stem { background: #ffeb3b; box-shadow: 0 0 60px #ffeb3b; }
+        .chamomile:hover .elem-title { color: #1a1a3e; } .chamomile:hover .elem-desc { opacity: 1; }
 
-
-        /* --- СТИЛИ ДЛЯ СВЕТЛЯЧКОВ (ГЛАВНЫЙ ЭКРАН) - ОСТАЛИСЬ ПРЕЖНИМИ --- */
-        /* Крылья */
+        /* СВЕТЛЯЧКИ (ГЛАВНЫЙ ЭКРАН) */
         .ff-wings { position: absolute; top: 75px; width: 200px; height: 150px; background: rgba(255, 255, 255, 0.1); border-radius: 50% 50% 10px 10px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 1; transform-origin: top center; border: 1px solid rgba(255,255,255,0.2); }
         .interactive-element:hover .ff-wings { width: 230px; transform: scaleX(1.1); background: rgba(255, 255, 255, 0.15); }
-        /* Голова */
         .ff-head { width: 75px; height: 75px; background: #2a2a5e; border-radius: 50%; z-index: 2; position: relative; border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5); }
         .ff-head::before, .ff-head::after { content: ''; position: absolute; top: 25px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
         .ff-head::before { left: 18px; } .ff-head::after { right: 18px; }
-        /* Пузико */
         .ff-belly { width: 130px; height: 180px; background: rgba(50,50,50,0.8); border-radius: 65px; margin-top: -10px; z-index: 2; transition: all 0.5s; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 2px solid rgba(255,255,255,0.1); }
-        /* Свечение Светлячков */
+        
         .ff-color-blue:hover .ff-belly { background: #6dd5ed; box-shadow: 0 0 50px #6dd5ed; border-color: #6dd5ed;}
-        .ff-color-blue:hover .elem-title { color: #1a1a3e; }
-        .ff-color-blue:hover .elem-desc { opacity: 1; }
+        .ff-color-blue:hover .elem-title { color: #1a1a3e; } .ff-color-blue:hover .elem-desc { opacity: 1; }
         .ff-color-yellow:hover .ff-belly { background: #ffeb3b; box-shadow: 0 0 50px #ffeb3b; border-color: #ffeb3b;}
-        .ff-color-yellow:hover .elem-title { color: #1a1a3e; }
-        .ff-color-yellow:hover .elem-desc { opacity: 1; }
+        .ff-color-yellow:hover .elem-title { color: #1a1a3e; } .ff-color-yellow:hover .elem-desc { opacity: 1; }
 
-
-        /* КАЛЕНДАРЬ НАСТРОЕНИЙ */
+        /* КАЛЕНДАРЬ */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
         .cal-day { background: rgba(255,255,255,0.05); padding: 5px; min-height: 50px; border-radius: 8px; font-size: 12px; color: rgba(255,255,255,0.5); position: relative; }
         .cal-day-name { text-align: center; color: rgba(255,255,255,0.3); font-size: 10px; margin-bottom: 5px;}
@@ -173,7 +191,6 @@
         .jar-container { position: relative; width: 240px; height: 300px; margin: 30px auto; }
         .jar-body { position: absolute; bottom: 0; left: 0; width: 100%; height: 260px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(4px); border: 2px solid rgba(255,255,255,0.2); border-top: none; border-radius: 20px 20px 60px 60px; overflow: hidden; }
         .jar-lid { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 150px; height: 35px; background: #5d4037; border-radius: 8px 8px 4px 4px; border: 1px solid rgba(255,255,255,0.1); z-index: 2; }
-        
         .firefly { position: absolute; width: 10px; height: 10px; border-radius: 50%; animation: float 4s infinite ease-in-out; cursor: pointer; will-change: transform; transition: 0.2s; }
         .firefly:hover { transform: scale(1.5); }
         .firefly::after { content: ''; position: absolute; width: 200%; height: 200%; background: inherit; filter: blur(5px); top: -50%; left: -50%; opacity: 0.6; border-radius: 50%; pointer-events: none; }
@@ -188,15 +205,16 @@
         .tag { padding: 5px 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 12px; cursor: pointer; transition: 0.2s;}
         .tag.selected { background: #ffeb3b; color: #000; border-color: #ffeb3b; }
 
-        /* ВЫБОР ЦВЕТА */
-        .color-picker-grid { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center;}
-        .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .color-dot:hover, .color-dot.selected { transform: scale(1.2); border-color: #fff; }
-        .color-input-wrapper { position: relative; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; cursor: pointer; border: 2px dashed rgba(255,255,255,0.5); }
-        .color-input-wrapper input { position: absolute; top: -10px; left: -10px; width: 50px; height: 50px; border: none; cursor: pointer; background: transparent; }
+        /* УЛУЧШЕННЫЙ ВЫБОР ЦВЕТА */
+        .color-picker-grid { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        .color-dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
+        .color-dot:hover, .color-dot.selected { transform: scale(1.2); border-color: #fff; box-shadow: 0 0 15px currentColor; }
+        
+        .color-input-wrapper { position: relative; width: 32px; height: 32px; border-radius: 50%; overflow: hidden; cursor: pointer; background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .color-input-wrapper:hover { transform: scale(1.1); border-color: #fff; }
+        .color-input-wrapper input { position: absolute; top: -10px; left: -10px; width: 60px; height: 60px; border: none; cursor: pointer; opacity: 0; }
 
-        /* Фото-превью */
-        .img-preview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; object-fit: cover; }
+        .img-preview { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 10px; display: none; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
 
         .diary-layout { display: grid; grid-template-columns: 250px 1fr; gap: 20px; margin-top: 20px;}
         .diary-nav { background: rgba(255,255,255,0.03); border-radius: 16px; padding: 10px; }
@@ -211,20 +229,23 @@
         .back-btn { background: none; border: none; color: #888; cursor: pointer; font-size: 16px; margin-bottom: 20px; }
         .back-btn:hover { color: #fff; }
 
-        /* Стили для экспорта картинок */
-        .export-card { background: linear-gradient(135deg, #1a1a3e, #2a2a5e); padding: 25px; border-radius: 16px; position: relative; }
+        .export-card { background: linear-gradient(135deg, #1a1a3e, #2a2a5e); padding: 25px; border-radius: 16px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         .export-img { max-width: 100%; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="ground-overlay"></div>
+    <div class="grass-layer grass-back"></div>
+    <div class="grass-layer grass-mid"></div>
+    <div class="grass-layer grass-front"></div>
+    <div class="ground-gradient"></div>
+
     <div class="stars" id="stars"></div>
 
     <div class="container">
         
         <div class="screen active" id="authChoiceScreen">
-            <h1 style="text-align: center; margin-top: 50px; font-size: 36px;">Добро пожаловать</h1>
-            <p style="text-align: center; color: #888; margin-bottom: 60px;">Выберите действие, чтобы продолжить</p>
+            <h1 style="text-align: center; margin-top: 50px; font-size: 36px; text-shadow: 0 0 20px rgba(255,255,255,0.4);">Добро пожаловать</h1>
+            <p style="text-align: center; color: rgba(255,255,255,0.6); margin-bottom: 60px;">Выберите действие, чтобы продолжить</p>
             
             <div class="choice-container" style="height: auto; align-items: flex-end;">
                 <div class="interactive-element dandelion" onclick="showAuthForm('login')">
@@ -249,7 +270,7 @@
 
         <div class="screen" id="authFormScreen">
             <button class="back-btn" onclick="showScreen('authChoiceScreen')">← Назад</button>
-            <div style="max-width: 400px; margin: 50px auto; background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px;">
+            <div style="max-width: 400px; margin: 50px auto; background: rgba(255,255,255,0.03); backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
                 <h2 id="authFormTitle" style="text-align: center; margin-bottom: 20px;">Вход</h2>
                 <input type="text" id="username" placeholder="Ваше имя">
                 <input type="password" placeholder="Пароль">
@@ -344,13 +365,16 @@
                         <textarea id="entryContent" rows="8" placeholder="О чем думаешь?"></textarea>
                         <input type="text" id="entryTags" placeholder="Теги (через запятую)">
                         
-                        <div style="margin-bottom: 15px;">
-                            <label style="color: #888; font-size: 14px; margin-bottom: 5px; display: block;">Прикрепить фото (опционально):</label>
-                            <input type="file" id="entryFile" accept="image/*" onchange="previewImage(this, 'entryImgPreview')">
-                            <img id="entryImgPreview" class="img-preview" src="" alt="preview">
+                        <div class="file-input-wrapper">
+                            <label class="file-input-label">
+                                <span style="font-size: 20px;">📎</span>
+                                <span>Выберите файл</span>
+                                <input type="file" id="entryFile" accept="image/*" onchange="previewImage(this, 'entryImgPreview')">
+                            </label>
                         </div>
+                        <img id="entryImgPreview" class="img-preview" src="" alt="preview">
 
-                        <button class="btn btn-primary" onclick="saveEntry()">Сохранить запись</button>
+                        <button class="btn btn-primary" style="margin-top: 15px;" onclick="saveEntry()">Сохранить запись</button>
                     </div>
 
                     <div id="tab-list" class="diary-tab">
@@ -382,8 +406,13 @@
             <h2 style="margin-bottom: 15px;">Новый светлячок</h2>
             <textarea id="momentText" rows="3" placeholder="Что хорошего случилось?"></textarea>
             
-            <p style="margin-bottom: 10px; color: #888; font-size: 14px;">Фото (опционально):</p>
-            <input type="file" id="momentFile" accept="image/*" onchange="previewImage(this, 'momentImgPreview')">
+            <div class="file-input-wrapper" style="margin-top: 10px;">
+                <label class="file-input-label">
+                    <span style="font-size: 20px;">📷</span>
+                    <span>Выберите файл</span>
+                    <input type="file" id="momentFile" accept="image/*" onchange="previewImage(this, 'momentImgPreview')">
+                </label>
+            </div>
             <img id="momentImgPreview" class="img-preview" src="" alt="preview">
 
             <p style="margin-bottom: 10px; color: #888; font-size: 14px; margin-top: 15px;">Теги:</p>
@@ -402,10 +431,7 @@
                 <div class="color-dot" style="background:#e91e63" onclick="selectColor(this, '#e91e63')"></div>
                 <div class="color-dot" style="background:#ff9800" onclick="selectColor(this, '#ff9800')"></div>
                 <div class="color-dot" style="background:#9c27b0" onclick="selectColor(this, '#9c27b0')"></div>
-                
-                <div style="width: 2px; height: 20px; background: rgba(255,255,255,0.2); margin: 0 5px;"></div>
-                
-                <div class="color-input-wrapper">
+                <div class="color-input-wrapper" title="Свой цвет">
                     <input type="color" id="customColorInput" onchange="addCustomColor(this.value)">
                 </div>
                 <div class="color-dot" id="recentColor1" style="background:transparent; display:none;" onclick="selectColor(this, this.dataset.color)"></div>
@@ -429,43 +455,34 @@
                 <img id="viewMomentImg" class="export-img" style="display: none; width: 100%; margin-bottom: 15px;" src="">
                 <div id="viewMomentTags" style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;"></div>
             </div>
-            
-            <div style="padding: 20px; display: flex; gap: 10px; justify-content: center; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05);">
-                <button class="btn btn-secondary" onclick="closeModal('viewMomentModal')">Закрыть</button>
-                <button class="btn btn-primary" onclick="exportToPNG('momentExportArea', 'memory')">Поделиться (PNG)</button>
+            <div style="padding: 20px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05);">
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="shareImage('momentExportArea', 'memory')">📤 Поделиться Картинкой</button>
+                <div style="display: flex; justify-content: center;">
+                    <button class="btn btn-secondary" style="font-size: 12px;" onclick="closeModal('viewMomentModal')">Закрыть</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ДАННЫЕ И КЭШ
-        let appData = {
-            user: null,
-            moodHistory: {}, 
-            moments: [], 
-            entries: [], 
-            recentColors: [] // Для кастомных цветов (макс 3)
-        };
+        let appData = { user: null, moodHistory: {}, moments: [], entries: [], recentColors: [] };
 
         const achievementsList = [
             { id: 'first', icon: '🌟', title: 'Первый свет', desc: 'Добавить 1 светлячка', req: () => appData.moments.length >= 1 },
             { id: 'jar50', icon: '🫙', title: 'Полная банка', desc: '50 светлячков', req: () => appData.moments.length >= 50 },
             { id: 'rainbow', icon: '🌈', title: 'Вся палитра', desc: 'Разные цвета эмоций', req: () => Object.keys(appData.moodHistory).length >= 5 },
-            { id: 'generous', icon: '🎁', title: 'Щедрая душа', desc: 'Поделиться записью', req: () => false },
             { id: 'streak', icon: '🔥', title: 'Неделя тепла', desc: '7 дней настроения', req: () => Object.keys(appData.moodHistory).length >= 7 },
-            { id: 'comeback', icon: '💪', title: 'Выкарабкался', desc: 'Из плохого в хорошее', req: () => false },
             { id: 'writer', icon: '📖', title: 'Сценарист', desc: 'Написать 5 записей в дневник', req: () => appData.entries.length >= 5 },
-            { id: 'sage', icon: '🧘', title: 'Мудрец', desc: 'Более 1000 символов в дневнике', req: () => appData.entries.reduce((acc, val) => acc + val.content.length, 0) >= 1000 },
             { id: 'photo', icon: '📷', title: 'Фотограф', desc: 'Добавить картинку', req: () => appData.entries.some(e => e.img) || appData.moments.some(m => m.img) }
         ];
 
         window.onload = function() {
             createStars();
             createBgFireflies();
+            startMeteorShower();
             loadData();
             updateRecentColorsUI();
             
-            // Проверка: новый или старый пользователь
             if (appData.user) {
                 document.getElementById('userNameLabel').textContent = appData.user;
                 const today = new Date().toISOString().split('T')[0];
@@ -479,56 +496,74 @@
             }
         };
 
-        // СОЗДАНИЕ ОПТИМИЗИРОВАННЫХ ФОНОВЫХ СВЕТЛЯЧКОВ
+        // --- ЛОГИКА МЕТЕОРОВ ---
+        function startMeteorShower() {
+            const container = document.getElementById('stars');
+            setInterval(() => {
+                const meteor = document.createElement('div');
+                meteor.className = 'meteor';
+                meteor.style.top = Math.random() * 50 + '%';
+                meteor.style.left = Math.random() * 100 + '%';
+                meteor.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                container.appendChild(meteor);
+                setTimeout(() => { meteor.remove(); }, 3000);
+            }, 4000);
+        }
+
+        // --- РАЗНОЦВЕТНЫЕ ФОНОВЫЕ СВЕТЛЯЧКИ ---
         function createBgFireflies() {
             const container = document.getElementById('stars');
-            for(let i=0; i<15; i++) {
+            const colors = ['#ffeb3b', '#00e676', '#00bcd4', '#e91e63', '#9c27b0'];
+            for(let i=0; i<25; i++) {
                 const ff = document.createElement('div');
                 ff.className = 'bg-firefly';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                ff.style.background = color;
+                ff.style.boxShadow = `0 0 15px ${color}`;
                 ff.style.left = Math.random() * 100 + '%';
                 ff.style.top = Math.random() * 100 + '%';
-                ff.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                ff.style.animationDelay = Math.random() * -10 + 's';
+                ff.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                ff.style.animationDelay = Math.random() * -20 + 's';
                 container.appendChild(ff);
             }
         }
 
-        // КЭШ
+        // КЭШ И ДАННЫЕ
         function loadData() {
             const saved = localStorage.getItem('fireflies_data');
             if (saved) appData = JSON.parse(saved);
         }
-
         function saveData() {
             localStorage.setItem('fireflies_data', JSON.stringify(appData));
             updateStats();
         }
 
-        // БАЗОВАЯ ЛОГИКА UI
+        // UI: ЗВЕЗДЫ (200 штук)
         function createStars() {
             const starsContainer = document.getElementById('stars');
-            for (let i = 0; i < 50; i++) {
+            for (let i = 0; i < 200; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
+                const size = Math.random() * 2 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
                 starsContainer.appendChild(star);
             }
         }
-
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             if (id === 'jarScreen') renderFireflies();
             if (id === 'diaryScreen') updateStats();
         }
-
         function showAuthForm(type) {
             document.getElementById('authFormTitle').textContent = type === 'login' ? 'Вход' : 'Регистрация';
             showScreen('authFormScreen');
         }
-
         function showMoodScreen() {
             const name = document.getElementById('username').value || appData.user || 'Путник';
             appData.user = name;
@@ -536,11 +571,13 @@
             showScreen('moodScreen');
             saveData();
         }
-
-        // ЧТЕНИЕ КАРТИНОК В BASE64
+        
+        // Улучшенное превью с именем файла
         function previewImage(input, previewId) {
             const file = input.files[0];
+            const label = input.parentElement.querySelector('span:last-child');
             if (file) {
+                if(label) label.textContent = file.name;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const img = document.getElementById(previewId);
@@ -551,15 +588,13 @@
             }
         }
 
-        // ЦВЕТА
+        // COLORS
         let currentSelectedColor = '#ffeb3b';
-
         function selectColor(element, color) {
             document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
             element.classList.add('selected');
             currentSelectedColor = color;
         }
-
         function addCustomColor(color) {
             currentSelectedColor = color;
             if (!appData.recentColors.includes(color)) {
@@ -568,10 +603,8 @@
                 saveData();
                 updateRecentColorsUI();
             }
-            // Выбираем первый добавленный
             document.getElementById('recentColor1').click(); 
         }
-
         function updateRecentColorsUI() {
             appData.recentColors.forEach((color, i) => {
                 const dot = document.getElementById('recentColor' + (i + 1));
@@ -583,208 +616,148 @@
             });
         }
 
-        // ЛОГИКА ДНЕВНИКА
+        // DIARY
         function switchTab(tab) {
             document.querySelectorAll('.diary-nav .nav-item').forEach(el => el.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.querySelectorAll('.diary-tab').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
-
             if(tab === 'list') renderEntries();
             if(tab === 'achieve') renderAchievements();
             if(tab === 'profile') renderCalendar();
         }
-
         function saveEntry() {
             const title = document.getElementById('entryTitle').value;
             const text = document.getElementById('entryContent').value;
             const tags = document.getElementById('entryTags').value.split(',').map(t => t.trim()).filter(t => t);
             const imgPreview = document.getElementById('entryImgPreview');
             const imgBase64 = imgPreview.style.display === 'block' ? imgPreview.src : null;
-
             if (!text) return;
-
-            appData.entries.unshift({
-                id: Date.now(),
-                title: title || 'Без заголовка',
-                content: text,
-                tags: tags,
-                img: imgBase64,
-                date: new Date().toLocaleDateString('ru-RU')
-            });
-
+            appData.entries.unshift({ id: Date.now(), title: title || 'Без заголовка', content: text, tags: tags, img: imgBase64, date: new Date().toLocaleDateString('ru-RU') });
             saveData();
             document.getElementById('entryTitle').value = '';
             document.getElementById('entryContent').value = '';
             document.getElementById('entryTags').value = '';
             document.getElementById('entryFile').value = '';
-            imgPreview.style.display = 'none';
-            imgPreview.src = '';
+            imgPreview.style.display = 'none'; imgPreview.src = '';
             switchTab('list');
         }
-
         function renderEntries() {
             const list = document.getElementById('entriesList');
             const search = document.getElementById('searchEntries').value.toLowerCase();
-
-            const filtered = appData.entries.filter(e => 
-                e.title.toLowerCase().includes(search) || 
-                e.content.toLowerCase().includes(search)
-            );
-
+            const filtered = appData.entries.filter(e => e.title.toLowerCase().includes(search) || e.content.toLowerCase().includes(search));
             list.innerHTML = filtered.map(e => `
                 <div id="entry-${e.id}" class="export-card" style="margin-bottom: 10px;">
-                    <div style="display:flex; justify-content:space-between; color:#888; font-size:12px; margin-bottom:10px;">
-                        <strong>${e.title}</strong>
-                        <span>${e.date}</span>
-                    </div>
+                    <div style="display:flex; justify-content:space-between; color:#888; font-size:12px; margin-bottom:10px;"><strong>${e.title}</strong><span>${e.date}</span></div>
                     <p style="margin-bottom: 10px; line-height: 1.5;">${e.content}</p>
                     ${e.img ? `<img src="${e.img}" class="export-img" style="margin-bottom:10px;">` : ''}
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top:10px;">
                         <div>${e.tags.map(t => `<span style="font-size:12px; color:#ffeb3b; margin-right:5px;">#${t}</span>`).join('')}</div>
-                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="exportToPNG('entry-${e.id}', 'diary')">Поделиться (PNG)</button>
+                        <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="shareImage('entry-${e.id}', 'diary')">📤 Поделиться</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        // ЛОГИКА БАНКИ
+        // JAR
         function openAddMomentModal() { document.getElementById('addMomentModal').classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
         function saveMoment() {
             const text = document.getElementById('momentText').value;
             if (!text) return alert("Напиши что-нибудь!");
-
             const selectedTags = Array.from(document.querySelectorAll('#momentTags .tag.selected')).map(t => t.textContent);
             const imgPreview = document.getElementById('momentImgPreview');
             const imgBase64 = imgPreview.style.display === 'block' ? imgPreview.src : null;
-
-            appData.moments.push({
-                id: Date.now(),
-                text: text,
-                tags: selectedTags,
-                color: currentSelectedColor,
-                img: imgBase64,
-                date: new Date().toLocaleDateString('ru-RU')
-            });
-
-            saveData();
-            renderFireflies();
-            closeModal('addMomentModal');
-            
-            document.getElementById('momentText').value = '';
-            document.getElementById('momentFile').value = '';
-            imgPreview.style.display = 'none';
-            imgPreview.src = '';
+            appData.moments.push({ id: Date.now(), text: text, tags: selectedTags, color: currentSelectedColor, img: imgBase64, date: new Date().toLocaleDateString('ru-RU') });
+            saveData(); renderFireflies(); closeModal('addMomentModal');
+            document.getElementById('momentText').value = ''; document.getElementById('momentFile').value = ''; imgPreview.style.display = 'none'; imgPreview.src = '';
             document.querySelectorAll('#momentTags .tag').forEach(t => t.classList.remove('selected'));
         }
-
         function renderFireflies() {
             const container = document.getElementById('firefliesContainer');
             container.innerHTML = appData.moments.map((m, index) => `
-                <div class="firefly" onclick="viewMoment(${index})" style="
-                    background: ${m.color};
-                    box-shadow: 0 0 10px ${m.color};
-                    left: ${Math.random() * 80 + 10}%;
-                    top: ${Math.random() * 80 + 10}%;
-                    animation-delay: ${Math.random() * 2}s;
-                "></div>
+                <div class="firefly" onclick="viewMoment(${index})" style="background: ${m.color}; box-shadow: 0 0 10px ${m.color}; left: ${Math.random() * 80 + 10}%; top: ${Math.random() * 80 + 10}%; animation-delay: ${Math.random() * 2}s;"></div>
             `).join('');
         }
-
         function viewMoment(index) {
             const m = appData.moments[index];
-            document.getElementById('viewMomentColor').style.background = m.color;
-            document.getElementById('viewMomentColor').style.color = m.color; 
-            document.getElementById('viewMomentDate').textContent = m.date;
-            document.getElementById('viewMomentText').textContent = m.text;
+            document.getElementById('viewMomentColor').style.background = m.color; document.getElementById('viewMomentColor').style.color = m.color; 
+            document.getElementById('viewMomentDate').textContent = m.date; document.getElementById('viewMomentText').textContent = m.text;
             document.getElementById('viewMomentTags').innerHTML = m.tags.map(t => `<span class="tag" style="background:rgba(255,255,255,0.1)">${t}</span>`).join('');
-            
             const imgEl = document.getElementById('viewMomentImg');
-            if(m.img) {
-                imgEl.src = m.img;
-                imgEl.style.display = 'block';
-            } else {
-                imgEl.style.display = 'none';
-            }
-
+            if(m.img) { imgEl.src = m.img; imgEl.style.display = 'block'; } else { imgEl.style.display = 'none'; }
             document.getElementById('viewMomentModal').classList.add('active');
         }
-
         function showRandomHappyMoment() {
             if (appData.moments.length === 0) return alert("Банка пока пуста. Добавь светлячков!");
-            const rnd = Math.floor(Math.random() * appData.moments.length);
-            viewMoment(rnd);
+            viewMoment(Math.floor(Math.random() * appData.moments.length));
         }
-
         function saveMood(moodName, color) {
             const today = new Date().toISOString().split('T')[0];
             appData.moodHistory[today] = { mood: moodName, color: color };
-            saveData();
-            showScreen('mainChoiceScreen');
+            saveData(); showScreen('mainChoiceScreen');
         }
 
-        // ЭКСПОРТ В PNG
-        function exportToPNG(elementId, prefix) {
+        // --- УМНЫЙ ШЕРИНГ (TELEGRAM / NATIVE) ---
+        async function shareImage(elementId, prefix) {
             const element = document.getElementById(elementId);
-            
-            // Прячем кнопку "Поделиться" внутри элемента, если она есть
-            const btn = element.querySelector('.btn');
-            if (btn) btn.style.display = 'none';
+            // Прячем кнопки перед скриншотом
+            const btns = element.querySelectorAll('.btn, .share-buttons');
+            btns.forEach(b => b.style.display = 'none');
 
-            html2canvas(element, { backgroundColor: '#1a1a3e', scale: 2 }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `fireflies_${prefix}_${Date.now()}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                if (btn) btn.style.display = 'block';
-            });
-        }
+            try {
+                const canvas = await html2canvas(element, { backgroundColor: '#1a1a3e', scale: 2 });
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], `fireflies_${prefix}_${Date.now()}.png`, { type: "image/png" });
 
-        // КАЛЕНДАРЬ И ПРОЧЕЕ
-        function updateStats() {
-            document.getElementById('statTotalMoments').textContent = `Всего светлячков: ${appData.moments.length}`;
-            document.getElementById('statTotalEntries').textContent = `Записей в дневнике: ${appData.entries.length}`;
-        }
+                    // Проверяем поддержку Web Share API для файлов (Телефоны)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Светлячки',
+                                text: 'Моё воспоминание ✨'
+                            });
+                        } catch (err) {
+                            console.log('Share canceled', err);
+                        }
+                    } else {
+                        // Фолбэк для ПК (Скачивание)
+                        const link = document.createElement('a');
+                        link.download = file.name;
+                        link.href = URL.createObjectURL(file);
+                        link.click();
+                        alert("Файл скачан! Теперь вы можете отправить его в Telegram вручную.");
+                    }
 
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            grid.innerHTML = '';
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = today.getMonth();
-
-            const firstDay = new Date(year, month, 1).getDay();
-            const startOffset = (firstDay === 0) ? 6 : firstDay - 1; 
-
-            for (let i = 0; i < startOffset; i++) {
-                grid.innerHTML += `<div class="cal-day" style="opacity:0.2;"></div>`;
+                    // Возвращаем кнопки
+                    btns.forEach(b => b.style.display = '');
+                    if(elementId.startsWith('entry-')) renderEntries();
+                }, 'image/png');
+            } catch (err) {
+                console.error(err);
+                btns.forEach(b => b.style.display = '');
             }
+        }
 
+        // STATS
+        function updateStats() { document.getElementById('statTotalMoments').textContent = `Всего светлячков: ${appData.moments.length}`; document.getElementById('statTotalEntries').textContent = `Записей в дневнике: ${appData.entries.length}`; }
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid'); grid.innerHTML = '';
+            const today = new Date(); const year = today.getFullYear(); const month = today.getMonth();
+            const firstDay = new Date(year, month, 1).getDay(); const startOffset = (firstDay === 0) ? 6 : firstDay - 1; 
+            for (let i = 0; i < startOffset; i++) { grid.innerHTML += `<div class="cal-day" style="opacity:0.2;"></div>`; }
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const moodData = appData.moodHistory[dateStr];
-
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; const moodData = appData.moodHistory[dateStr];
                 let content = `<div class="cal-day-name">${day}</div>`;
                 if (moodData) content += `<div class="cal-icon" style="background:${moodData.color}; border-radius:50%; width:15px; height:15px; margin:auto; box-shadow: 0 0 10px ${moodData.color};"></div>`;
                 grid.innerHTML += `<div class="cal-day">${content}</div>`;
             }
         }
-
         function renderAchievements() {
             const list = document.getElementById('achievementsList');
-            list.innerHTML = achievementsList.map(a => {
-                const unlocked = a.req();
-                return `
-                    <div class="achieve-box" style="opacity: ${unlocked ? 1 : 0.3}">
-                        <div style="font-size:30px; margin-bottom:5px;">${unlocked ? a.icon : '🔒'}</div>
-                        <div style="font-weight:bold;">${a.title}</div>
-                        <div style="font-size:10px; color:#888;">${a.desc}</div>
-                    </div>
-                `;
-            }).join('');
+            list.innerHTML = achievementsList.map(a => { const unlocked = a.req(); return `<div class="achieve-box" style="opacity: ${unlocked ? 1 : 0.3}"><div style="font-size:30px; margin-bottom:5px;">${unlocked ? a.icon : '🔒'}</div><div style="font-weight:bold;">${a.title}</div><div style="font-size:10px; color:#888;">${a.desc}</div></div>`; }).join('');
         }
     </script>
 </body>
