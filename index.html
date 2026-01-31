@@ -22,7 +22,19 @@
         .star { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; opacity: 0.5; }
         @keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
 
-        /* Фоновые светлячки (GPU ускорение) */
+        /* НОВОЕ: Затемненная трава снизу */
+        .ground-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20vh; /* Высота травы */
+            background: linear-gradient(to top, #050508, transparent);
+            z-index: 1; /* Поверх звезд и фоновых светлячков */
+            pointer-events: none;
+        }
+
+        /* Фоновые светлячки (GPU ускорение) - z-index изменен, чтобы летали за травой */
         .bg-firefly {
             position: absolute;
             width: 8px; height: 8px;
@@ -32,7 +44,7 @@
             box-shadow: 0 0 15px #ffeb3b;
             will-change: transform;
             animation: floatBg 15s linear infinite;
-            z-index: 0;
+            z-index: 0; /* За травой */
             opacity: 0.4;
         }
         @keyframes floatBg {
@@ -42,7 +54,7 @@
             100% { transform: translate3d(0, -150px, 0); opacity: 0;}
         }
 
-        .container { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
 
         .screen { display: none; animation: fadeIn 0.3s ease; width: 100%; height: 100%; }
         .screen.active { display: block; }
@@ -70,57 +82,86 @@
         .mood-item:hover { background: rgba(255,255,255,0.05); transform: translateY(-5px); }
         .mood-label { font-size: 14px; color: rgba(255,255,255,0.7); margin-top: 10px; }
 
-        /* --- ГИГАНТСКИЕ СВЕТЛЯЧКИ (УВЕЛИЧЕНЫ НА 30%) --- */
+        /* --- ГИГАНТСКИЕ ЭЛЕМЕНТЫ (СВЕТЛЯЧКИ И ЦВЕТЫ) --- */
         .choice-container { display: flex; justify-content: center; align-items: center; gap: 100px; height: 70vh; }
         
-        .giant-firefly {
+        /* Общий контейнер для интерактивных элементов */
+        .interactive-element {
             position: relative;
-            width: 260px; /* Было 200 */
-            height: 380px; /* Было 300 */
+            width: 260px;
+            height: 380px;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+        .interactive-element:hover { transform: scale(1.05); z-index: 10; }
 
-        .giant-firefly:hover { transform: scale(1.05); z-index: 10; }
-
-        /* Крылья */
-        .ff-wings { position: absolute; top: 75px; width: 200px; height: 150px; background: rgba(255, 255, 255, 0.1); border-radius: 50% 50% 10px 10px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 1; transform-origin: top center; border: 1px solid rgba(255,255,255,0.2); }
-        .giant-firefly:hover .ff-wings { width: 230px; transform: scaleX(1.1); background: rgba(255, 255, 255, 0.15); }
-
-        /* Голова */
-        .ff-head { width: 75px; height: 75px; background: #2a2a5e; border-radius: 50%; z-index: 2; position: relative; border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5); }
+        /* --- СТИЛИ ДЛЯ ЦВЕТОВ (ВХОД) --- */
         
-        /* Глазки */
-        .ff-head::before, .ff-head::after { content: ''; position: absolute; top: 25px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
-        .ff-head::before { left: 18px; } .ff-head::after { right: 18px; }
+        /* Голова цветка (центр) */
+        .flower-head { 
+            width: 85px; height: 85px; border-radius: 50%; z-index: 2; position: relative; 
+            border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 15px rgba(0,0,0,0.3);
+        }
 
-        /* Пузико */
-        .ff-belly {
-            width: 130px; height: 180px; background: rgba(50,50,50,0.8); border-radius: 65px;
-            margin-top: -10px; z-index: 2; transition: all 0.5s;
+        /* Лепестки/Пух (вместо крыльев) */
+        .flower-petals {
+            position: absolute; top: 70px; width: 220px; height: 220px; 
+            border-radius: 50%; backdrop-filter: blur(10px); transition: 0.3s; z-index: 1; 
+            transform-origin: center center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .interactive-element:hover .flower-petals { transform: scale(1.1); }
+
+        /* Стебель/Основа (вместо пузика) - тот же стиль, что и у светлячка */
+        .flower-stem {
+            width: 130px; height: 180px; background: rgba(40, 60, 40, 0.8); border-radius: 65px; /* Зеленоватый оттенок */
+            margin-top: -20px; z-index: 2; transition: all 0.5s;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             overflow: hidden; position: relative;
             border: 2px solid rgba(255,255,255,0.1);
         }
 
-        .ff-title { font-weight: bold; font-size: 22px; color: #fff; transition: 0.3s; z-index: 3; text-transform: uppercase; }
-        .ff-desc { font-size: 14px; color: #1a1a3e; opacity: 0; text-align: center; padding: 0 10px; transition: 0.5s; margin-top: 5px; z-index: 3; font-weight: 500;}
+        /* Текст */
+        .elem-title { font-weight: bold; font-size: 22px; color: #fff; transition: 0.3s; z-index: 3; text-transform: uppercase; }
+        .elem-desc { font-size: 14px; color: #1a1a3e; opacity: 0; text-align: center; padding: 0 10px; transition: 0.5s; margin-top: 5px; z-index: 3; font-weight: 500;}
 
-        /* Свечение */
+        /* == Одуванчик (Вход) == */
+        .dandelion .flower-head { background: radial-gradient(circle, #ffffff, #e0e0e0); /* Белая голова */ }
+        .dandelion .flower-petals { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 30px rgba(255,255,255,0.3); /* Белый пух */ }
+        /* Свечение Одуванчика */
+        .dandelion:hover .flower-stem { background: #ffffff; box-shadow: 0 0 60px #ffffff; border-color: #ffffff; }
+        .dandelion:hover .elem-title { color: #1a1a3e; }
+        .dandelion:hover .elem-desc { opacity: 1; }
+
+        /* == Ромашка (Регистрация) == */
+        .chamomile .flower-head { background: radial-gradient(circle, #ffeb3b, #fbc02d); /* Желтая серединка */ }
+        .chamomile .flower-petals { background: rgba(255, 255, 255, 0.3); border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; /* Белые лепестки */ }
+        /* Свечение Ромашки */
+        .chamomile:hover .flower-stem { background: #ffeb3b; box-shadow: 0 0 60px #ffeb3b; border-color: #ffeb3b; }
+        .chamomile:hover .elem-title { color: #1a1a3e; }
+        .chamomile:hover .elem-desc { opacity: 1; }
+
+
+        /* --- СТИЛИ ДЛЯ СВЕТЛЯЧКОВ (ГЛАВНЫЙ ЭКРАН) - ОСТАЛИСЬ ПРЕЖНИМИ --- */
+        /* Крылья */
+        .ff-wings { position: absolute; top: 75px; width: 200px; height: 150px; background: rgba(255, 255, 255, 0.1); border-radius: 50% 50% 10px 10px; backdrop-filter: blur(5px); transition: 0.3s; z-index: 1; transform-origin: top center; border: 1px solid rgba(255,255,255,0.2); }
+        .interactive-element:hover .ff-wings { width: 230px; transform: scaleX(1.1); background: rgba(255, 255, 255, 0.15); }
+        /* Голова */
+        .ff-head { width: 75px; height: 75px; background: #2a2a5e; border-radius: 50%; z-index: 2; position: relative; border: 2px solid rgba(255,255,255,0.1); box-shadow: inset 0 -5px 10px rgba(0,0,0,0.5); }
+        .ff-head::before, .ff-head::after { content: ''; position: absolute; top: 25px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
+        .ff-head::before { left: 18px; } .ff-head::after { right: 18px; }
+        /* Пузико */
+        .ff-belly { width: 130px; height: 180px; background: rgba(50,50,50,0.8); border-radius: 65px; margin-top: -10px; z-index: 2; transition: all 0.5s; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; position: relative; border: 2px solid rgba(255,255,255,0.1); }
+        /* Свечение Светлячков */
         .ff-color-blue:hover .ff-belly { background: #6dd5ed; box-shadow: 0 0 50px #6dd5ed; border-color: #6dd5ed;}
-        .ff-color-blue:hover .ff-title { color: #1a1a3e; }
-        .ff-color-blue:hover .ff-desc { opacity: 1; }
-
+        .ff-color-blue:hover .elem-title { color: #1a1a3e; }
+        .ff-color-blue:hover .elem-desc { opacity: 1; }
         .ff-color-yellow:hover .ff-belly { background: #ffeb3b; box-shadow: 0 0 50px #ffeb3b; border-color: #ffeb3b;}
-        .ff-color-yellow:hover .ff-title { color: #1a1a3e; }
-        .ff-color-yellow:hover .ff-desc { opacity: 1; }
+        .ff-color-yellow:hover .elem-title { color: #1a1a3e; }
+        .ff-color-yellow:hover .elem-desc { opacity: 1; }
 
-        .ff-color-green:hover .ff-belly { background: #00e676; box-shadow: 0 0 50px #00e676; border-color: #00e676;}
-        .ff-color-green:hover .ff-title { color: #1a1a3e; }
-        .ff-color-green:hover .ff-desc { opacity: 1; }
 
         /* КАЛЕНДАРЬ НАСТРОЕНИЙ */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 15px; }
@@ -176,30 +217,31 @@
     </style>
 </head>
 <body>
+    <div class="ground-overlay"></div>
     <div class="stars" id="stars"></div>
 
     <div class="container">
         
         <div class="screen active" id="authChoiceScreen">
             <h1 style="text-align: center; margin-top: 50px; font-size: 36px;">Добро пожаловать</h1>
-            <p style="text-align: center; color: #888; margin-bottom: 40px;">Выберите действие, чтобы продолжить</p>
+            <p style="text-align: center; color: #888; margin-bottom: 60px;">Выберите действие, чтобы продолжить</p>
             
-            <div class="choice-container" style="height: auto; margin-top: 20px;">
-                <div class="giant-firefly ff-color-green" onclick="showAuthForm('login')">
-                    <div class="ff-head"></div>
-                    <div class="ff-wings"></div>
-                    <div class="ff-belly">
-                        <span class="ff-title">ВХОД</span>
-                        <span class="ff-desc">Вернуться к своим записям</span>
+            <div class="choice-container" style="height: auto; align-items: flex-end;">
+                <div class="interactive-element dandelion" onclick="showAuthForm('login')">
+                    <div class="flower-head"></div>
+                    <div class="flower-petals"></div>
+                    <div class="flower-stem">
+                        <span class="elem-title">ВХОД</span>
+                        <span class="elem-desc">Вернуться к своим записям</span>
                     </div>
                 </div>
 
-                <div class="giant-firefly ff-color-yellow" onclick="showAuthForm('register')">
-                    <div class="ff-head"></div>
-                    <div class="ff-wings"></div>
-                    <div class="ff-belly">
-                        <span class="ff-title">НОВЫЙ</span>
-                        <span class="ff-desc">Создать свою банку</span>
+                <div class="interactive-element chamomile" onclick="showAuthForm('register')">
+                    <div class="flower-head"></div>
+                    <div class="flower-petals"></div>
+                    <div class="flower-stem">
+                        <span class="elem-title">НОВЫЙ</span>
+                        <span class="elem-desc">Создать свою банку</span>
                     </div>
                 </div>
             </div>
@@ -247,21 +289,21 @@
             <h2 style="text-align: center; margin-top: 50px;">Куда отправимся?</h2>
             
             <div class="choice-container">
-                <div class="giant-firefly ff-color-blue" onclick="showScreen('diaryScreen')">
+                <div class="interactive-element giant-firefly ff-color-blue" onclick="showScreen('diaryScreen')">
                     <div class="ff-head"></div>
                     <div class="ff-wings"></div>
                     <div class="ff-belly">
-                        <span class="ff-title">ДНЕВНИК</span>
-                        <span class="ff-desc">Место для мыслей и рефлексии</span>
+                        <span class="elem-title">ДНЕВНИК</span>
+                        <span class="elem-desc">Место для мыслей и рефлексии</span>
                     </div>
                 </div>
 
-                <div class="giant-firefly ff-color-yellow" onclick="showScreen('jarScreen')">
+                <div class="interactive-element giant-firefly ff-color-yellow" onclick="showScreen('jarScreen')">
                     <div class="ff-head"></div>
                     <div class="ff-wings"></div>
                     <div class="ff-belly">
-                        <span class="ff-title">БАНКА</span>
-                        <span class="ff-desc">Хранилище светлых воспоминаний</span>
+                        <span class="elem-title">БАНКА</span>
+                        <span class="elem-desc">Хранилище светлых воспоминаний</span>
                     </div>
                 </div>
             </div>
